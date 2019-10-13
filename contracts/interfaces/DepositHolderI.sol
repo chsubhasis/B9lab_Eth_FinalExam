@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.4.13;
 
 contract DepositHolderI {
 
@@ -14,11 +14,9 @@ contract DepositHolderI {
      *     It should roll back if the caller is not the owner of the contract.
      *     It should roll back if the argument passed is 0.
      *     It should roll back if the argument is no different from the current deposit.
-     * @param depositWeis The value of the deposit being set, measured in weis.
+     * @param depositWeis The value of the deposit being set, measure in weis.
      * @return Whether the action was successful.
-     * Emits LogDepositSet with:
-     *     The sender of the action.
-     *     The new value that was set.
+     * Emits LogDepositSet.
      */
     function setDeposit(uint depositWeis)
         public
@@ -29,7 +27,7 @@ contract DepositHolderI {
      * needs to deposit to enter the road system.
      */
     function getDeposit()
-        view
+        constant
         public
         returns(uint weis);
 

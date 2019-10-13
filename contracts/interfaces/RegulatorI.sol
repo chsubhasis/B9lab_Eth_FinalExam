@@ -1,6 +1,6 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.4.13;
 
-import { TollBoothOperatorI } from "./TollBoothOperatorI.sol";
+import "./TollBoothOperatorI.sol";
 
 contract RegulatorI {
 
@@ -12,15 +12,13 @@ contract RegulatorI {
      *   1: motorbike
      *   2: car
      *   3: lorry
-     * Do not construe this list of example vehicle types as a constraint on the acceptable values.
-     * All values of vehicle type are acceptable, there is no constraint.
      */
 
     /**
      * Event emitted when a new vehicle has been registered with its type.
      * @param sender The account that ran the action.
      * @param vehicle The address of the vehicle that is registered.
-     * @param vehicleType The VehicleType that the vehicle was just registered as.
+     * @param vehicleType The VehicleType that the vehicle was registered as.
      */
     event LogVehicleTypeSet(
         address indexed sender,
@@ -37,22 +35,19 @@ contract RegulatorI {
      * @param vehicleType The VehicleType of the vehicle being registered.
      *    passing 0 is equivalent to unregistering the vehicle.
      * @return Whether the action was successful.
-     * Emits LogVehicleTypeSet with:
-     *     The sender of the action.
-     *     The address of the vehicle that was changed.
-     *     The vehicle type that was set.
+     * Emits LogVehicleTypeSet
      */
     function setVehicleType(address vehicle, uint vehicleType)
         public
         returns(bool success);
 
     /**
-     * @param vehicle The address of the registered vehicle. It should accept a 0x vehicle address.
+     * @param vehicle The address of the registered vehicle.
      * @return The VehicleType of the vehicle whose address was passed. 0 means it is not
      *   a registered vehicle.
      */
     function getVehicleType(address vehicle)
-        view
+        constant
         public
         returns(uint vehicleType);
 
@@ -77,11 +72,7 @@ contract RegulatorI {
      * @param owner The rightful owner of the newly deployed TollBoothOperator.
      * @param deposit The initial value of the TollBoothOperator deposit.
      * @return The address of the newly deployed TollBoothOperator.
-     * Emits LogTollBoothOperatorCreated with:
-     *     The sender of the action.
-     *     The address of the deployed TollBoothOperator.
-     *     The rightful owner of the TollBoothOperator.
-     *     the initial deposit value.
+     * Emits LogTollBoothOperatorCreated.
      */
     function createNewOperator(
             address owner,
@@ -105,20 +96,18 @@ contract RegulatorI {
      *     It should roll back if the operator is unknown.
      * @param operator The address of the contract to remove.
      * @return Whether the action was successful.
-     * Emits LogTollBoothOperatorRemoved with:
-     *     The sender of the action.
-     *     The address of the remove TollBoothOperator.
+     * Emits LogTollBoothOperatorRemoved.
      */
     function removeOperator(address operator)
         public
         returns(bool success);
 
     /**
-     * @param operator The address of the TollBoothOperator to test. It should accept a 0 address.
+     * @param operator The address of the TollBoothOperator to test.
      * @return Whether the TollBoothOperator is indeed approved.
      */
     function isOperator(address operator)
-        view
+        constant
         public
         returns(bool indeed);
 
@@ -127,6 +116,6 @@ contract RegulatorI {
      *
      * - a contract named `Regulator` that:
      *     - is `OwnedI` and `RegulatorI`.
-     *     - has a constructor that takes no parameter, or you omit it.
+     *     - has a constructor that takes no parameter.
      */        
 }

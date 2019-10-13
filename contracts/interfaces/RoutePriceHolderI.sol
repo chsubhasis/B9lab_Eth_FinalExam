@@ -1,4 +1,4 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.4.13;
 
 contract RoutePriceHolderI {
 
@@ -27,11 +27,7 @@ contract RoutePriceHolderI {
      * @param exitBooth The address of the exit booth of the route set.
      * @param priceWeis The price in weis of the new route.
      * @return Whether the action was successful.
-     * Emits LogRoutePriceSet with:
-     *     The sender of the action.
-     *     The address of the entry booth.
-     *     The address of the exit booth.
-     *     The new price of the route.
+     * Emits LogPriceSet.
      */
     function setRoutePrice(
             address entryBooth,
@@ -41,8 +37,8 @@ contract RoutePriceHolderI {
         returns(bool success);
 
     /**
-     * @param entryBooth The address of the entry booth of the route. It should accept a 0 address.
-     * @param exitBooth The address of the exit booth of the route. It should accept a 0 address.
+     * @param entryBooth The address of the entry booth of the route.
+     * @param exitBooth The address of the exit booth of the route.
      * @return priceWeis The price in weis of the route.
      *     If the route is not known or if any address is not a booth it should return 0.
      *     If the route is invalid, it should return 0.
@@ -50,7 +46,7 @@ contract RoutePriceHolderI {
     function getRoutePrice(
             address entryBooth,
             address exitBooth)
-        view
+        constant
         public
         returns(uint priceWeis);
 
@@ -59,6 +55,6 @@ contract RoutePriceHolderI {
      *
      * - a contract named `RoutePriceHolder` that:
      *     - is `OwnedI`, `TollBoothHolderI`, and `RoutePriceHolderI`.
-     *     - has a constructor that takes no parameter, or you omit it.
+     *     - has a constructor that takes no parameter.
      */
 }

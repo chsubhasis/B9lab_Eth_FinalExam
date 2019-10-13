@@ -7,7 +7,7 @@ module.exports = function getTransactionReceiptMined(txHash, interval) {
             } else if (receipt == null) {
                 setTimeout(
                     () => transactionReceiptAsync(resolve, reject),
-                    interval || 500);
+                    interval ? interval : 500);
             } else {
                 resolve(receipt);
             }

@@ -1,11 +1,11 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.4.13;
 
-import { Owned } from "../Owned.sol";
-import { TollBoothHolder } from "../TollBoothHolder.sol";
-import { RoutePriceHolder } from "../RoutePriceHolder.sol";
+import "../Owned.sol";
+import "../TollBoothHolder.sol";
+import "../RoutePriceHolder.sol";
 
 contract RoutePriceHolderMock is TollBoothHolder, RoutePriceHolder {
 
-    constructor() public {
+    function RoutePriceHolderMock() {
     }
 }

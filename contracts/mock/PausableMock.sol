@@ -1,21 +1,21 @@
-pragma solidity ^0.5.0;
+pragma solidity ^0.4.13;
 
-import { Pausable } from "../Pausable.sol";
+import "../Pausable.sol";
 
 contract PausableMock is Pausable {
 
-    mapping(bool => uint) public counters;
+	mapping(bool => uint) public counters;
 
-    constructor(bool paused) Pausable(paused) public {
-    }
+	function PausableMock(bool paused) Pausable(paused) {
+	}
 
-    function countUpWhenPaused()
-        whenPaused public {
-        counters[isPaused()]++;
-    }
+	function countUpWhenPaused()
+		whenPaused {
+		counters[isPaused()]++;
+	}
 
-    function countUpWhenNotPaused()
-        whenNotPaused public {
-        counters[isPaused()]++;
-    }
+	function countUpWhenNotPaused()
+		whenNotPaused {
+		counters[isPaused()]++;
+	}
 }
