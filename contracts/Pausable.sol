@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.5.0;
 
 import "./Owned.sol";
 import "./interfaces/PausableI.sol";
@@ -16,18 +16,18 @@ contract Pausable is PausableI, Owned {
     modifier whenPaused(){require(paused); _;}
     modifier whenNotPaused(){require(!paused); _;}
 
-    function Pausable(bool isPaused){
+    constructor(bool isPaused) public{
       paused = isPaused;
     }
 
-    function setPaused(bool newState) fromOwner returns(bool success){
+    function setPaused(bool newState) fromOwner public returns(bool success){
       require(newState != paused);
       paused = newState;
-      LogPausedSet(msg.sender, newState);
+      emit LogPausedSet(msg.sender, newState);
       return true;
     }
 
-    function isPaused() constant returns(bool isIndeed){
+    function isPaused() view public returns(bool isIndeed){
       return paused;
     }
 }

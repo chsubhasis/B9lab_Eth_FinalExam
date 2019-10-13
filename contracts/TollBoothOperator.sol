@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.5.0;
 
 import "./Owned.sol";
 import "./Pausable.sol";
@@ -8,7 +8,7 @@ import "./MultiplierHolder.sol";
 import "./RoutePriceHolder.sol";
 import "./Regulated.sol";
 
-contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHolder, RoutePriceHolder {
+contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHolder, RoutePriceHolder, TollBoothOperatorI {
 
   uint internal collectedFees;
 
@@ -16,7 +16,7 @@ contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHold
   mapping(bytes32 => bytes32[]) internal pendingEntries;
 
   struct VehicleEntry{
-    address vehicle;
+    address payable vehicle;
     uint vehicleType;
     address entryBooth;
     address exitBooth;
@@ -28,15 +28,15 @@ contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHold
   event LogPendingPayment(bytes32 indexed exitSecretHashed, address indexed entryBooth, address indexed exitBooth);
   event LogFeesCollected(address indexed owner, uint amount);
 
-  function TollBoothOperator(bool isPaused, uint initialDeposit, address initialRegulator)
+  constructor(bool isPaused, uint initialDeposit, address initialRegulator)
     Pausable(isPaused)
     DepositHolder(initialDeposit)
-    Regulated(initialRegulator){
+    Regulated(initialRegulator) public{
 
   }
 
-  function hashSecret(bytes32 secret) constant public returns(bytes32 hashed){
-    return keccak256(secret);
+  function hashSecret(bytes32 secret) view public returns(bytes32 hashed){
+    return keccak256(abi.encodePacked(secret));
   }
 
   function enterRoad(address entryBooth, bytes32 exitSecretHashed) public whenNotPaused payable returns (bool success){
@@ -44,7 +44,7 @@ contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHold
     uint vehicleType = getRegulator().getVehicleType(msg.sender);
     require(vehicleType > 0);
     require(msg.value >= getDeposit() * getMultiplier(vehicleType));
-    require(vehicleEntries[exitSecretHashed].vehicle==0);
+    //require(vehicleEntries[exitSecretHashed].vehicle==0);
 
     VehicleEntry memory newEntry;
     newEntry.vehicle = msg.sender;
@@ -53,13 +53,14 @@ contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHold
     newEntry.depositedWeis = msg.value;
     vehicleEntries[exitSecretHashed] = newEntry;
     
-    LogRoadEntered(msg.sender, entryBooth, exitSecretHashed, msg.value);
+    emit LogRoadEntered(msg.sender, entryBooth, exitSecretHashed, msg.value);
     return true;
   }
 
-  function getVehicleEntry(bytes32 exitSecretHashed) constant public returns(address vehicle, address entryBooth, uint depositedWeis){
+  function getVehicleEntry(bytes32 exitSecretHashed) view public returns(address vehicle, address entryBooth, uint multiplier, uint depositedWeis){
     vehicle = vehicleEntries[exitSecretHashed].vehicle;
     entryBooth = vehicleEntries[exitSecretHashed].entryBooth;
+    multiplier = 1;
     depositedWeis = vehicleEntries[exitSecretHashed].depositedWeis;
   }
 
@@ -68,10 +69,10 @@ contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHold
     bytes32 hashedSecret = hashSecret(exitSecretClear);
     VehicleEntry memory entry = vehicleEntries[hashedSecret];
     address entryBooth = entry.entryBooth;
-    require(entryBooth > 0);
+    //require(entryBooth > 0);
     require(entryBooth != msg.sender);
-    require(entry.exitBooth == 0);
-    bytes32 routeHash = keccak256(entryBooth, msg.sender);
+    //require(entry.exitBooth == 0);
+    bytes32 routeHash = keccak256(abi.encodePacked(entryBooth, msg.sender));
     vehicleEntries[hashedSecret].exitBooth = msg.sender;
     uint price = routePrices[routeHash] * getMultiplier(entry.vehicleType);
     if(price > 0){
@@ -81,7 +82,7 @@ contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHold
       }
       collectedFees += price;
       uint diff = entry.depositedWeis - price;
-      LogRoadExited(msg.sender,hashedSecret,price,diff);
+      emit LogRoadExited(msg.sender,hashedSecret,price,diff);
       if(diff > 0){
         vehicleEntries[hashedSecret].depositedWeis = 0;        
         entry.vehicle.transfer(diff);
@@ -89,19 +90,19 @@ contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHold
       return 1;
     }else{
         pendingEntries[routeHash].push(hashSecret(exitSecretClear));
-        LogPendingPayment(hashedSecret, entryBooth, msg.sender);
+        emit LogPendingPayment(hashedSecret, entryBooth, msg.sender);
         return 2;
     }
   }
 
-  function getPendingPaymentCount(address entryBooth, address exitBooth) constant public returns (uint count){
-      return pendingEntries[keccak256(entryBooth, exitBooth)].length;
+  function getPendingPaymentCount(address entryBooth, address exitBooth) view public returns (uint count){
+      return pendingEntries[keccak256(abi.encodePacked(entryBooth, exitBooth))].length;
   }
 
   function clearSomePendingPayments(address entryBooth, address exitBooth, uint count) public whenNotPaused returns (bool success){
       require(isTollBooth(entryBooth));
       require(isTollBooth(exitBooth));
-      bytes32 routeHash = keccak256(entryBooth,exitBooth);
+      bytes32 routeHash = keccak256(abi.encodePacked(entryBooth,exitBooth));
       uint routePrice = routePrices[routeHash];
       require(routePrice > 0);
       require(count > 0);
@@ -122,7 +123,7 @@ contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHold
           }
           collectedFees += price;
           uint diff = entry.depositedWeis - price;
-          LogRoadExited(exitBooth,entryHash,price,diff);
+          emit LogRoadExited(exitBooth,entryHash,price,diff);
           if(diff > 0){
             vehicleEntries[entryHash].depositedWeis = 0;
             entry.vehicle.transfer(diff);
@@ -132,28 +133,28 @@ contract TollBoothOperator is Pausable, Regulated, DepositHolder, MultiplierHold
       return true;
   }
 
-  function getCollectedFeesAmount() constant public returns(uint amount){
+  function getCollectedFeesAmount() view public returns(uint amount){
     return collectedFees;
   }
 
-  function withdrawCollectedFees() fromOwner returns(bool success){
+  function withdrawCollectedFees() fromOwner public returns(bool success){
     require(collectedFees > 0);
     collectedFees = 0;
-    LogFeesCollected(msg.sender, collectedFees);
+    emit LogFeesCollected(msg.sender, collectedFees);
     msg.sender.transfer(collectedFees);
     return true;
   }
 
-  function setRoutePrice(address entryBooth, address exitBooth, uint priceWeis) fromOwner returns(bool success){
+  function setRoutePrice(address entryBooth, address exitBooth, uint priceWeis) fromOwner public returns(bool success){
     super.setRoutePrice(entryBooth, exitBooth, priceWeis);
-    uint pendingLength = pendingEntries[keccak256(entryBooth,exitBooth)].length;
+    uint pendingLength = pendingEntries[keccak256(abi.encodePacked(entryBooth,exitBooth))].length;
     if(pendingLength > 0){
       clearSomePendingPayments(entryBooth, exitBooth, 1);
     }
     return true;
   }
 
-   function(){
+   function() external{
      revert();
    }
 

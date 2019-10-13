@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.5.0;
 
 contract MultiplierHolderI {
 
@@ -14,15 +14,19 @@ contract MultiplierHolderI {
         uint multiplier);
 
     /**
-     * Called by the owner of the TollBoothOperator.
-     *   Can be used to update a value.
-     *   It should roll back if the vehicle type is 0.
-     *   Setting the multiplier to 0 is equivalent to removing it and is acceptable.
-     *   It should roll back if the same multiplier is already set to the vehicle type.
+     * Called by the owner of the MultiplierHolder.
+     *     Can be used to update a value.
+     *     It should roll back if the caller is not the owner of the contract.
+     *     It should roll back if the vehicle type is 0.
+     *     Setting the multiplier to 0 is equivalent to removing it and is an acceptable action.
+     *     It should roll back if the same multiplier is already set to the vehicle type.
      * @param vehicleType The type of the vehicle being set.
      * @param multiplier The multiplier to use.
      * @return Whether the action was successful.
-     * Emits LogMultiplierSet.
+     * Emits LogMultiplierSet with:
+     *     The sender of the action.
+     *     The vehicle type that was modified.
+     *     The new multiplier that was set.
      */
     function setMultiplier(
             uint vehicleType,
@@ -37,7 +41,7 @@ contract MultiplierHolderI {
      *     A 0 value indicates a non-existent multiplier.
      */
     function getMultiplier(uint vehicleType)
-        constant
+        view
         public
         returns(uint multiplier);
 
@@ -46,6 +50,6 @@ contract MultiplierHolderI {
      *
      * - a contract named `MultiplierHolder` that:
      *     - is `OwnedI` and `MultiplierHolderI`.
-     *     - has a constructor that takes no parameter.
+     *     - has a constructor that takes no parameter, or you omit it.
      */        
 }

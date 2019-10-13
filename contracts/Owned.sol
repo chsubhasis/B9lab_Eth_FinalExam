@@ -1,4 +1,4 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.5.0;
 
 import "./interfaces/OwnedI.sol";
 
@@ -10,19 +10,19 @@ contract Owned is OwnedI {
 
     modifier fromOwner{require(msg.sender == contractOwner); _;}
 
-    function Owned(){
+    constructor() public{
       contractOwner = msg.sender;
     }
 
-    function setOwner(address newOwner) fromOwner returns(bool success){
+    function setOwner(address newOwner) fromOwner public returns(bool success) {
       require(newOwner != contractOwner);
-      require(newOwner != 0);
-      LogOwnerSet(contractOwner, newOwner);
+      //require(newOwner != 0);
+      emit LogOwnerSet(contractOwner, newOwner);
       contractOwner = newOwner;
       return true;
     }
 
-    function getOwner() constant returns(address owner){
+    function getOwner() view public returns(address owner) {
       return contractOwner;
     }
 }

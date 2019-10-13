@@ -1,6 +1,6 @@
-pragma solidity ^0.4.13;
+pragma solidity ^0.5.0;
 
-import "./RegulatorI.sol";
+import { RegulatorI } from "./RegulatorI.sol";
 
 contract RegulatedI {
     /**
@@ -18,9 +18,12 @@ contract RegulatedI {
      *       calls this function.
      *     It should roll back if the new regulator address is 0.
      *     It should roll back if the new regulator is the same as the current regulator.
-     * @param newRegulator The new desired regulator of the contract.
+     * @param newRegulator The new desired regulator of the contract. It is assumed, that this is the
+     *     address of a `RegulatorI` contract. It is not necessary to prove it is a `RegulatorI`.
      * @return Whether the action was successful.
-     * Emits LogRegulatorSet.
+     * Emits LogRegulatorSet with:
+     *     The sender of the action.
+     *     The new regulator.
      */
     function setRegulator(address newRegulator)
         public
@@ -30,7 +33,7 @@ contract RegulatedI {
      * @return The current regulator.
      */
     function getRegulator()
-        constant
+        view
         public
         returns(RegulatorI regulator);
 
@@ -39,6 +42,7 @@ contract RegulatedI {
      *
      * - a contract named `Regulated` that:
      *     - is a `RegulatedI`.
-     *     - has a constructor that takes one `address` parameter, the initial regulator, which cannot be 0.
+     *     - has a constructor that takes one `address` parameter, the initial regulator, which cannot be 0
+     *       and which is assumed to be a `RegulatorI`. It is not necessary to prove it is a `RegulatorI`.
      */
 }
